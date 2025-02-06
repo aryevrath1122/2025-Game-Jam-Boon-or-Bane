@@ -120,20 +120,14 @@ public class PlayerMovement : MonoBehaviour
         GameObject shield = Instantiate(SheildPrefab, transform.position + transform.forward * 2f, transform.rotation);
         shield.SetActive(true);
         Shield shieldScript = shield.GetComponent<Shield>();
-        if (shieldScript != null)
-        {
-            shieldScript.SetHealth(20);
-        }
+       
     }
 
     void ShootBullet()
     {
         GameObject bullet = Instantiate(BulletPrefab, transform.position + transform.forward, transform.rotation);
         Bullet bulletScript = bullet.GetComponent<Bullet>();
-        if (bulletScript != null)
-        {
-            bulletScript.SetDamage(10);
-        }
+       
     }
 
     IEnumerator Dash()

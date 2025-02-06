@@ -2,19 +2,21 @@ using UnityEngine;
 
 public class Shield : MonoBehaviour
 {
-    private int health;
+    private int health = 2;
 
-    public void SetHealth(int health)
+   
+    void OnCollisionEnter(Collision collision)
     {
-        this.health = health;
-    }
-
-    public void TakeDamage(int damage)
-    {
-        health -= damage;
-        if (health <= 0)
+        
+        
+        
+        if (collision.collider.CompareTag("Enemy Bullet"))
         {
-            Destroy(gameObject);
+            for (int i = 0; i < health; i++)
+            {
+                Destroy(gameObject);
+            }
+                
         }
     }
 }

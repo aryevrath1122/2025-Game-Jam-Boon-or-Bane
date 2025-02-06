@@ -2,13 +2,10 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    private int damage;
+    
     public float speed = 20f;
 
-    public void SetDamage(int damage)
-    {
-        this.damage = damage;
-    }
+   
 
     void Update()
     {

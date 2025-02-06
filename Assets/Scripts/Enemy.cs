@@ -8,7 +8,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private GameObject EnemyBullet;
     [SerializeField] private float moveSpeed = 3f;
     [SerializeField] private float shootInterval = 2f; // Time between shots
-    public float EnemyHealth = 20f;
+    public float health = 2f;
+
 
     private Transform targetPosition;
     private bool movingToPosition1 = false;
@@ -48,5 +49,15 @@ public class Enemy : MonoBehaviour
     void ShootBullet()
     {
         Instantiate(EnemyBullet, transform.position + transform.forward, transform.rotation);
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.CompareTag("Player Bullet"))
+        {
+            for (int i = 0; i < health; i++)
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 }

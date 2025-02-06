@@ -58,8 +58,12 @@ public class EnemyBullet : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            Destroy(collision.gameObject); 
+            Destroy(collision.gameObject);
             Destroy(gameObject); // Destroy bullet on impact
+        }
+        if (collision.collider.CompareTag("Shield"))
+        {
+            Destroy(gameObject);
         }
     }
 }
