@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         SheildPrefab.SetActive(false);
 
-        if (playerInput == null)
+        //if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
 
         // Assign different stats based on player index
