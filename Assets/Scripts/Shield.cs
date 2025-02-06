@@ -7,16 +7,12 @@ public class Shield : MonoBehaviour
    
     void OnCollisionEnter(Collision collision)
     {
-        
-        
-        
         if (collision.collider.CompareTag("Enemy Bullet"))
         {
             for (int i = 0; i < health; i++)
             {
                 Destroy(gameObject);
-            }
-                
+            }                
         }
     }
 }

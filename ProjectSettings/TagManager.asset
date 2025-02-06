@@ -9,6 +9,8 @@ TagManager:
   - Player Bullet
   - Enemy
   - Enemy Bullet
+  - Passable Object
+  - Levitatable Object
   layers:
   - Default
   - TransparentFX

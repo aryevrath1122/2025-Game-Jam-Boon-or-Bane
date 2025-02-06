@@ -25,9 +25,17 @@ public class PlayerMovement : MonoBehaviour
     private bool canUseSuperJump = false;
     private bool canUseSheild = false;
     private bool canUseAttack = false;
+    private bool canUseInvisibility = false;
+    private bool canUseLevitate = false;
 
     private float currentSheildCooldown = 0f;
     private float currentAttackCooldown = 0f;
+    private float invisibilityCooldown = 0f;
+    private float levitateCooldown = 0f;
+
+    private bool isInvisible = false;
+    private bool isLevitating = false;
+    private GameObject levitatedObject;
 
     public PlayerInput playerInput;
 
@@ -44,15 +52,17 @@ public class PlayerMovement : MonoBehaviour
         {
             moveSpeed = 10f;
             jumpForce = 5f;
-            canUseSuperJump = true; // Player 1 gets Super Jump
-            canUseAttack = true; // Player 1 Gets to attack
+            canUseSuperJump = true;
+            canUseAttack = true;
+            canUseInvisibility = true;
         }
         else if (playerInput.playerIndex == 1) // Player 2
         {
             moveSpeed = 5f;
             jumpForce = 10f;
-            canUseDash = true; // Player 2 gets Dash
-            canUseSheild = true; // Player 2 gets a shield
+            canUseDash = true;
+            canUseSheild = true;
+            canUseLevitate = true;
         }
 
         // Subscribe to Input System events
@@ -61,6 +71,7 @@ public class PlayerMovement : MonoBehaviour
         playerInput.actions["Jump"].performed += ctx => Jump();
         playerInput.actions["Dash"].performed += ctx => UseDashOrSuperJump();
         playerInput.actions["Combat"].performed += ctx => UseSheildOrAttack();
+        playerInput.actions["Ability"].performed += ctx => UseSpecialAbility();
     }
 
     void FixedUpdate()
@@ -89,11 +100,11 @@ public class PlayerMovement : MonoBehaviour
 
     void UseDashOrSuperJump()
     {
-        if (canUseDash && stamina >= 40f) // Dash Mechanic for Player 2
+        if (canUseDash && stamina >= 40f)
         {
             StartCoroutine(Dash());
         }
-        else if (canUseSuperJump && isGrounded && stamina >= 40f) // Super Jump for Player 1
+        else if (canUseSuperJump && isGrounded && stamina >= 40f)
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpForce * superJumpMultiplier, rb.velocity.z);
             stamina -= 40f;
@@ -119,15 +130,11 @@ public class PlayerMovement : MonoBehaviour
     {
         GameObject shield = Instantiate(SheildPrefab, transform.position + transform.forward * 2f, transform.rotation);
         shield.SetActive(true);
-        Shield shieldScript = shield.GetComponent<Shield>();
-       
     }
 
     void ShootBullet()
     {
         GameObject bullet = Instantiate(BulletPrefab, transform.position + transform.forward, transform.rotation);
-        Bullet bulletScript = bullet.GetComponent<Bullet>();
-       
     }
 
     IEnumerator Dash()
@@ -148,6 +155,99 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
     }
 
+    void UseSpecialAbility()
+    {
+        if (canUseInvisibility && invisibilityCooldown <= 0f)
+        {
+            StartCoroutine(ActivateInvisibility());
+        }
+        else if (canUseLevitate && levitateCooldown <= 0f)
+        {
+            StartCoroutine(ActivateLevitate());
+        }
+    }
+
+    IEnumerator ActivateInvisibility()
+    {
+        isInvisible = true;
+        invisibilityCooldown = 10f;
+
+        // Make player visually invisible
+        GetComponent<Renderer>().enabled = false;
+
+        // Disable collision with "Passable Object" tagged objects
+        Collider[] passableObjects = FindObjectsOfType<Collider>();
+        foreach (var obj in passableObjects)
+        {
+            if (obj.CompareTag("Passable Object"))
+            {
+                Physics.IgnoreCollision(GetComponent<Collider>(), obj, true);
+            }
+        }
+
+        yield return new WaitForSeconds(5f); // Fixed duration
+
+        // Restore normal visibility
+        GetComponent<Renderer>().enabled = true;
+        isInvisible = false;
+
+        // Re-enable collision with "Passable Object" tagged objects
+        foreach (var obj in passableObjects)
+        {
+            if (obj.CompareTag("Passable Object"))
+            {
+                Physics.IgnoreCollision(GetComponent<Collider>(), obj, false);
+            }
+        }
+    }
+
+    IEnumerator ActivateLevitate()
+    {
+        isLevitating = true;
+        levitateCooldown = 10f;
+
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 3f);
+        foreach (var collider in colliders)
+        {
+            if (collider.CompareTag("Levitatable Object"))
+            {
+                levitatedObject = collider.gameObject;
+                levitatedObject.GetComponent<Rigidbody>().useGravity = false;
+                break; // Lift only one object
+            }
+        }
+
+        while (isLevitating && levitatedObject != null)
+        {
+            // Keep the object floating above the player
+            levitatedObject.transform.position = Vector3.Lerp(
+                levitatedObject.transform.position,
+                transform.position + Vector3.up * 2f,
+                Time.deltaTime * 5f // Smooth movement
+            );
+
+            if (playerInput.actions["Ability"].WasReleasedThisFrame())
+            {
+                DropLevitatedObject();
+                break;
+            }
+
+            yield return null;
+        }
+
+        DropLevitatedObject();
+    }
+
+    void DropLevitatedObject()
+    {
+        if (levitatedObject != null)
+        {
+            levitatedObject.GetComponent<Rigidbody>().useGravity = true;
+            levitatedObject = null;
+        }
+        isLevitating = false;
+    }
+
     void RegenerateStamina()
     {
         if (stamina < maxStamina)
@@ -160,15 +260,10 @@ public class PlayerMovement : MonoBehaviour
 
     void UpdateCooldowns()
     {
-        if (currentSheildCooldown > 0f)
-        {
-            currentSheildCooldown -= Time.deltaTime;
-        }
-
-        if (currentAttackCooldown > 0f)
-        {
-            currentAttackCooldown -= Time.deltaTime;
-        }
+        if (currentSheildCooldown > 0f) currentSheildCooldown -= Time.deltaTime;
+        if (currentAttackCooldown > 0f) currentAttackCooldown -= Time.deltaTime;
+        if (invisibilityCooldown > 0f) invisibilityCooldown -= Time.deltaTime;
+        if (levitateCooldown > 0f) levitateCooldown -= Time.deltaTime;
     }
 
     void OnCollisionEnter(Collision collision)
