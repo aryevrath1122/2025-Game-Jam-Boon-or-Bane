@@ -1,11 +1,11 @@
-using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine;
 using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] GameObject SheildPrefab;
-    [SerializeField] GameObject BulletPrefab;
+    [SerializeField] private GameObject SheildPrefab;
+    [SerializeField] private GameObject BulletPrefab;
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool isGrounded = true;
@@ -39,13 +39,20 @@ public class PlayerMovement : MonoBehaviour
 
     public PlayerInput playerInput;
 
+    // Invisible material reference
+    [SerializeField] private Material invisibleMaterial;
+    private Material originalMaterial;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         SheildPrefab.SetActive(false);
 
-        //if (playerInput == null)
+        if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
+
+        // Store the original material of the player
+        originalMaterial = GetComponent<Renderer>().material;
 
         // Assign different stats based on player index
         if (playerInput.playerIndex == 0) // Player 1
@@ -160,10 +167,12 @@ public class PlayerMovement : MonoBehaviour
         if (canUseInvisibility && invisibilityCooldown <= 0f)
         {
             StartCoroutine(ActivateInvisibility());
+            Debug.Log("Invisibility On");
         }
         else if (canUseLevitate && levitateCooldown <= 0f)
         {
             StartCoroutine(ActivateLevitate());
+            Debug.Log("Levitation On");
         }
     }
 
@@ -172,8 +181,8 @@ public class PlayerMovement : MonoBehaviour
         isInvisible = true;
         invisibilityCooldown = 10f;
 
-        // Make player visually invisible
-        GetComponent<Renderer>().enabled = false;
+        // Change material to invisible
+        GetComponent<Renderer>().material = invisibleMaterial;
 
         // Disable collision with "Passable Object" tagged objects
         Collider[] passableObjects = FindObjectsOfType<Collider>();
@@ -187,8 +196,8 @@ public class PlayerMovement : MonoBehaviour
 
         yield return new WaitForSeconds(5f); // Fixed duration
 
-        // Restore normal visibility
-        GetComponent<Renderer>().enabled = true;
+        // Restore original material
+        GetComponent<Renderer>().material = originalMaterial;
         isInvisible = false;
 
         // Re-enable collision with "Passable Object" tagged objects
@@ -214,28 +223,15 @@ public class PlayerMovement : MonoBehaviour
             {
                 levitatedObject = collider.gameObject;
                 Rigidbody rb = levitatedObject.GetComponent<Rigidbody>();
-
-                if (rb != null)
-                {
-                    rb.useGravity = false;   // Disable gravity so it doesn't fall
-                    rb.isKinematic = true;   // Set to kinematic for smooth movement
-                }
-
                 break; // Lift only the first found object
             }
-        }
-
-        if (levitatedObject == null)
-        {
-            isLevitating = false;
-            yield break; // No object found, exit coroutine
         }
 
         while (isLevitating && levitatedObject != null)
         {
             // Smoothly move the object above the player
             levitatedObject.transform.position = Vector3.Lerp(
-                levitatedObject.transform.position,
+            levitatedObject.transform.position,
                 transform.position + Vector3.up * 2f, // Keep object floating above player
                 Time.deltaTime * 5f
             );
@@ -257,15 +253,11 @@ public class PlayerMovement : MonoBehaviour
         if (levitatedObject != null)
         {
             Rigidbody rb = levitatedObject.GetComponent<Rigidbody>();
-
-           
-
             levitatedObject = null;
         }
 
         isLevitating = false;
     }
-
 
     void RegenerateStamina()
     {
