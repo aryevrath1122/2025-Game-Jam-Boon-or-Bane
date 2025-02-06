@@ -399,7 +399,7 @@ MonoBehaviour:
   EnemyBullet: {fileID: 3871019062217851811, guid: 53020331cef3996439eb76e70b83ee9c, type: 3}
   moveSpeed: 3
   shootInterval: 2
-  EnemyHealth: 20
+  health: 2
 --- !u!136 &1558581127
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -443,7 +443,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -549,7 +549,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
