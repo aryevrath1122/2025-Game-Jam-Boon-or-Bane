@@ -10,7 +10,7 @@ public class Shield : MonoBehaviour
         // Check if the shield collides with an enemy bullet
         if (collision.collider.CompareTag("Enemy Bullet"))
         {
-            Debug.Log("Bullet Hit Shield");
+            Debug.Log("Fuck you");
             health--;
             if (health <= 0)
             {
