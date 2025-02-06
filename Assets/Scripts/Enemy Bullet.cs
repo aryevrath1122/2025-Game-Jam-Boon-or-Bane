@@ -11,13 +11,15 @@ public class EnemyBullet : MonoBehaviour
 
     private void Start()
     {
+        rb = GetComponent<Rigidbody>();
         FindNearestPlayer();
+        MoveTowardsTarget();
         Destroy(gameObject, lifeTime); // Destroy bullet after some time
     }
 
     private void Update()
     {
-        MoveTowardsTarget();
+        ///*MoveTowardsTarget*/();
     }
 
     void FindNearestPlayer()
@@ -48,17 +50,18 @@ public class EnemyBullet : MonoBehaviour
         // Set direction towards nearest player
         targetDirection = (nearestPlayer.transform.position - transform.position).normalized;
     }
-
+    private Rigidbody rb;
+ 
     void MoveTowardsTarget()
     {
-        transform.position += targetDirection * speed * Time.deltaTime;
+        //transform.position += targetDirection * speed * Time.deltaTime;
+        rb.velocity = targetDirection * speed;
     }
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            Destroy(collision.gameObject);
             Destroy(gameObject); // Destroy bullet on impact
         }
         if (collision.collider.CompareTag("Shield"))

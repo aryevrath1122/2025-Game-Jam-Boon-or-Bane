@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Soul_M
+  m_Name: Enemy Orb
   m_Shader: {fileID: -6465566751694194690, guid: a6c971c3e68a50645b7cbe9df035555b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -43,8 +43,8 @@ Material:
     - _QueueOffset: 0
     - _ScrollSpeed: 0.05
     m_Colors:
-    - _InnerColor: {r: 0, g: 0.103220224, b: 1, a: 0}
-    - _OuterColor: {r: 0, g: 0.018811464, b: 1, a: 0}
+    - _InnerColor: {r: 1, g: 0, b: 0.008527756, a: 0}
+    - _OuterColor: {r: 0.28730503, g: 0, b: 0.7169812, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &1057922769109915014
 MonoBehaviour:

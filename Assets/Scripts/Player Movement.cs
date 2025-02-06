@@ -43,6 +43,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Material invisibleMaterial;
     private Material originalMaterial;
 
+    // Health and health regeneration variables
+    public float health = 100f;
+    private float maxHealth = 100f;
+    private float healthRegenRate = 2f;  // Passive health regeneration rate per second
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -79,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
         playerInput.actions["Dash"].performed += ctx => UseDashOrSuperJump();
         playerInput.actions["Combat"].performed += ctx => UseSheildOrAttack();
         playerInput.actions["Ability"].performed += ctx => UseSpecialAbility();
+        playerInput.actions["HealthRegen"].performed += ctx => UseStaminaToRegenerateHealth();
     }
 
     void FixedUpdate()
@@ -135,8 +141,7 @@ public class PlayerMovement : MonoBehaviour
 
     void SpawnShield()
     {
-        GameObject shield = Instantiate(SheildPrefab, transform.position + transform.forward * 2f, transform.rotation);
-        shield.SetActive(true);
+        SheildPrefab.SetActive(true);
     }
 
     void ShootBullet()
@@ -269,6 +274,18 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Method to use stamina to regenerate health when pressing the left shoulder button
+    void UseStaminaToRegenerateHealth()
+    {
+        if (stamina >= 20f)  // Example: Use 20 stamina to regenerate 10 health
+        {
+            health += 10f;
+            if (health > maxHealth) health = maxHealth;
+
+            stamina -= 20f;
+        }
+    }
+
     void UpdateCooldowns()
     {
         if (currentSheildCooldown > 0f) currentSheildCooldown -= Time.deltaTime;
@@ -282,6 +299,11 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+        }
+        if (collision.gameObject.CompareTag("Enemy Bullet"))
+        {
+            health = health - 20;
+            if (health <= 0) Destroy(gameObject);
         }
     }
 }

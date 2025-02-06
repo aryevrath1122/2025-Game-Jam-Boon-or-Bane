@@ -5,12 +5,15 @@ public class Bullet : MonoBehaviour
     
     public float speed = 20f;
 
-   
-
-    void Update()
+    private Rigidbody rb;
+    public float lifetime = 10f;
+    private void Start()
     {
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
+        rb = GetComponent<Rigidbody>();
+        rb.velocity = transform.forward * speed;
+        Destroy(gameObject, lifetime); // Destroy after 'lifetime' seconds
     }
+
 
     void OnCollisionEnter(Collision collision)
     {
