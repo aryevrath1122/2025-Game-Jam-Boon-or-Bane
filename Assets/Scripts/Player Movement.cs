@@ -206,24 +206,38 @@ public class PlayerMovement : MonoBehaviour
         isLevitating = true;
         levitateCooldown = 10f;
 
+        // Detect objects within a 3-unit sphere
         Collider[] colliders = Physics.OverlapSphere(transform.position, 3f);
         foreach (var collider in colliders)
         {
             if (collider.CompareTag("Levitatable Object"))
             {
                 levitatedObject = collider.gameObject;
-                levitatedObject.GetComponent<Rigidbody>().useGravity = false;
-                break; // Lift only one object
+                Rigidbody rb = levitatedObject.GetComponent<Rigidbody>();
+
+                if (rb != null)
+                {
+                    rb.useGravity = false;   // Disable gravity so it doesn't fall
+                    rb.isKinematic = true;   // Set to kinematic for smooth movement
+                }
+
+                break; // Lift only the first found object
             }
+        }
+
+        if (levitatedObject == null)
+        {
+            isLevitating = false;
+            yield break; // No object found, exit coroutine
         }
 
         while (isLevitating && levitatedObject != null)
         {
-            // Keep the object floating above the player
+            // Smoothly move the object above the player
             levitatedObject.transform.position = Vector3.Lerp(
                 levitatedObject.transform.position,
-                transform.position + Vector3.up * 2f,
-                Time.deltaTime * 5f // Smooth movement
+                transform.position + Vector3.up * 2f, // Keep object floating above player
+                Time.deltaTime * 5f
             );
 
             if (playerInput.actions["Ability"].WasReleasedThisFrame())
@@ -242,11 +256,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (levitatedObject != null)
         {
-            levitatedObject.GetComponent<Rigidbody>().useGravity = true;
+            Rigidbody rb = levitatedObject.GetComponent<Rigidbody>();
+
+           
+
             levitatedObject = null;
         }
+
         isLevitating = false;
     }
+
 
     void RegenerateStamina()
     {
