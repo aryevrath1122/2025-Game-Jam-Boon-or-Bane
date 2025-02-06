@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] GameObject SheildPrefab;
+    [SerializeField] GameObject BulletPrefab;
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool isGrounded = true;
@@ -14,15 +17,24 @@ public class PlayerMovement : MonoBehaviour
     public float stamina = 100f;
     private float maxStamina = 100f;
     private float staminaRegenRate = 10f;
+    private float sheildCooldown = 3f;
+    private float attackCooldown = 3f;
+    private bool isDashing = false;
+
     private bool canUseDash = false;
     private bool canUseSuperJump = false;
-    private bool isDashing = false;
+    private bool canUseSheild = false;
+    private bool canUseAttack = false;
+
+    private float currentSheildCooldown = 0f;
+    private float currentAttackCooldown = 0f;
 
     public PlayerInput playerInput;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        SheildPrefab.SetActive(false);
 
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
@@ -33,12 +45,14 @@ public class PlayerMovement : MonoBehaviour
             moveSpeed = 10f;
             jumpForce = 5f;
             canUseSuperJump = true; // Player 1 gets Super Jump
+            canUseAttack = true; // Player 1 Gets to attack
         }
         else if (playerInput.playerIndex == 1) // Player 2
         {
             moveSpeed = 5f;
             jumpForce = 10f;
             canUseDash = true; // Player 2 gets Dash
+            canUseSheild = true; // Player 2 gets a shield
         }
 
         // Subscribe to Input System events
@@ -46,6 +60,7 @@ public class PlayerMovement : MonoBehaviour
         playerInput.actions["Move"].canceled += ctx => moveInput = Vector2.zero;
         playerInput.actions["Jump"].performed += ctx => Jump();
         playerInput.actions["Dash"].performed += ctx => UseDashOrSuperJump();
+        playerInput.actions["Combat"].performed += ctx => UseSheildOrAttack();
     }
 
     void FixedUpdate()
@@ -54,6 +69,7 @@ public class PlayerMovement : MonoBehaviour
             Move();
 
         RegenerateStamina();
+        UpdateCooldowns();
     }
 
     void Move()
@@ -85,7 +101,42 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    System.Collections.IEnumerator Dash()
+    void UseSheildOrAttack()
+    {
+        if (canUseSheild && currentSheildCooldown <= 0f)
+        {
+            SpawnShield();
+            currentSheildCooldown = sheildCooldown;
+        }
+        else if (canUseAttack && currentAttackCooldown <= 0f)
+        {
+            ShootBullet();
+            currentAttackCooldown = attackCooldown;
+        }
+    }
+
+    void SpawnShield()
+    {
+        GameObject shield = Instantiate(SheildPrefab, transform.position + transform.forward * 2f, transform.rotation);
+        shield.SetActive(true);
+        Shield shieldScript = shield.GetComponent<Shield>();
+        if (shieldScript != null)
+        {
+            shieldScript.SetHealth(20);
+        }
+    }
+
+    void ShootBullet()
+    {
+        GameObject bullet = Instantiate(BulletPrefab, transform.position + transform.forward, transform.rotation);
+        Bullet bulletScript = bullet.GetComponent<Bullet>();
+        if (bulletScript != null)
+        {
+            bulletScript.SetDamage(10);
+        }
+    }
+
+    IEnumerator Dash()
     {
         isDashing = true;
         stamina -= 40f;
@@ -110,6 +161,19 @@ public class PlayerMovement : MonoBehaviour
             stamina += staminaRegenRate * Time.deltaTime;
             if (stamina > maxStamina)
                 stamina = maxStamina;
+        }
+    }
+
+    void UpdateCooldowns()
+    {
+        if (currentSheildCooldown > 0f)
+        {
+            currentSheildCooldown -= Time.deltaTime;
+        }
+
+        if (currentAttackCooldown > 0f)
+        {
+            currentAttackCooldown -= Time.deltaTime;
         }
     }
 
