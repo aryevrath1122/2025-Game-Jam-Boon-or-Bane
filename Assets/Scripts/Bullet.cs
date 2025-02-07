@@ -10,7 +10,7 @@ public class Bullet : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.velocity = transform.forward * speed;
+        rb.velocity = -transform.right * speed;
         Destroy(gameObject, lifetime); // Destroy after 'lifetime' seconds
     }
 

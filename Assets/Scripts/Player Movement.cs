@@ -188,7 +188,7 @@ public class PlayerMovement : MonoBehaviour
 
     void ShootBullet()
     {
-        GameObject bullet = Instantiate(BulletPrefab, transform.position + transform.forward, transform.rotation);
+        GameObject bullet = Instantiate(BulletPrefab, transform.position - transform.right, transform.rotation);
     }
 
     void UseSpecialAbility()
