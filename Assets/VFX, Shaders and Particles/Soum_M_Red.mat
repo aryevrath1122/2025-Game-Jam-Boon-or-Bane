@@ -51,7 +51,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _FresnelPower: 1.59
-    - _NoiseScale: 100
+    - _NoiseScale: 42.45
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ScrollSpeed: 0.05
