@@ -6,6 +6,8 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private GameObject SheildPrefab;
     [SerializeField] private GameObject BulletPrefab;
+    [SerializeField] Transform Checkpoint;
+    
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool isGrounded = true;
@@ -27,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     private bool canUseAttack = false;
     private bool canUseInvisibility = false;
     private bool canUseLevitate = false;
+    
 
     private float currentSheildCooldown = 0f;
     private float currentAttackCooldown = 0f;
@@ -35,7 +38,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isInvisible = false;
     private bool isLevitating = false;
+    private bool isFucked = false;
     private GameObject levitatedObject;
+    
 
     public PlayerInput playerInput;
 
@@ -46,7 +51,10 @@ public class PlayerMovement : MonoBehaviour
     // Health and health regeneration variables
     public float health = 100f;
     private float maxHealth = 100f;
-    private float healthRegenRate = 2f;  // Passive health regeneration rate per second
+    private float healthRegenRate = 2f;  // Passive health regeneration rate per second
+
+    // Store the last movement direction
+    private Vector3 lastMoveDirection = Vector3.forward;
 
     void Awake()
     {
@@ -94,12 +102,25 @@ public class PlayerMovement : MonoBehaviour
 
         RegenerateStamina();
         UpdateCooldowns();
+
+        if(isFucked == true)
+        {
+            transform.position = Checkpoint.position;
+            this.gameObject.SetActive(true);
+        }
+
     }
 
     void Move()
     {
         Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y) * moveSpeed;
         rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
+
+        // Store the movement direction
+        if (moveInput.magnitude > 0)
+        {
+            lastMoveDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        }
     }
 
     void Jump()
@@ -125,6 +146,27 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    IEnumerator Dash()
+    {
+        isDashing = true;
+        stamina -= 40f;
+
+        float dashTime = 0.2f;
+        float startTime = Time.time;
+
+        // Use the last move direction or forward direction if no movement
+        Vector3 dashDirection = lastMoveDirection != Vector3.zero ? lastMoveDirection : transform.forward;
+        dashDirection *= dashSpeed;
+
+        while (Time.time < startTime + dashTime)
+        {
+            rb.velocity = new Vector3(dashDirection.x, rb.velocity.y, dashDirection.z);
+            yield return null;
+        }
+
+        isDashing = false;
+    }
+
     void UseSheildOrAttack()
     {
         if (canUseSheild && currentSheildCooldown <= 0f)
@@ -147,24 +189,6 @@ public class PlayerMovement : MonoBehaviour
     void ShootBullet()
     {
         GameObject bullet = Instantiate(BulletPrefab, transform.position + transform.forward, transform.rotation);
-    }
-
-    IEnumerator Dash()
-    {
-        isDashing = true;
-        stamina -= 40f;
-
-        float dashTime = 0.2f;
-        float startTime = Time.time;
-        Vector3 dashDirection = transform.forward * dashSpeed;
-
-        while (Time.time < startTime + dashTime)
-        {
-            rb.velocity = new Vector3(dashDirection.x, rb.velocity.y, dashDirection.z);
-            yield return null;
-        }
-
-        isDashing = false;
     }
 
     void UseSpecialAbility()
@@ -304,6 +328,11 @@ public class PlayerMovement : MonoBehaviour
         {
             health = health - 20;
             if (health <= 0) Destroy(gameObject);
+        }
+        if (collision.collider.CompareTag("Death Area"))
+        {
+            isFucked = true;
+            this.gameObject.SetActive(false);
         }
     }
 }
