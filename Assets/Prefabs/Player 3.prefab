@@ -167,7 +167,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8119123401247662009}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.73193944, z: -0, w: 0.6813697}
+  m_LocalRotation: {x: 0, y: 0.7319367, z: 0, w: 0.6813727}
   m_LocalPosition: {x: -499.48, y: 14.73, z: 1.16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -321,6 +321,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SheildPrefab: {fileID: 1377405142279684564}
   BulletPrefab: {fileID: 1047695891567219590, guid: 4d40138c885bbfc4ea6424f17e9530cb, type: 3}
+  Checkpoint: {fileID: 3460872764317464162, guid: a90edfc95420d1c4aba46532c4edcded, type: 3}
   moveSpeed: 5
   jumpForce: 10
   dashSpeed: 20

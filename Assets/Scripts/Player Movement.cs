@@ -6,7 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private GameObject SheildPrefab;
     [SerializeField] private GameObject BulletPrefab;
-    [SerializeField] Transform Checkpoint;
+    [SerializeField] public Transform Checkpoint;
     
     private Rigidbody rb;
     private Vector2 moveInput;
@@ -94,8 +94,9 @@ public class PlayerMovement : MonoBehaviour
         playerInput.actions["Ability"].performed += ctx => UseSpecialAbility();
         playerInput.actions["HealthRegen"].performed += ctx => UseStaminaToRegenerateHealth();
     }
-
+    
     void FixedUpdate()
+    
     {
         if (!isDashing)
             Move();
@@ -103,13 +104,9 @@ public class PlayerMovement : MonoBehaviour
         RegenerateStamina();
         UpdateCooldowns();
 
-        if(isFucked == true)
-        {
-            transform.position = Checkpoint.position;
-            this.gameObject.SetActive(true);
-        }
 
     }
+
 
     void Move()
     {
@@ -333,6 +330,13 @@ public class PlayerMovement : MonoBehaviour
         {
             isFucked = true;
             this.gameObject.SetActive(false);
+            transform.position = Checkpoint.position;
+            if (isFucked == true)
+            {
+                Debug.Log("Running");
+                this.gameObject.SetActive(true);
+                isFucked = false;
+            }
         }
     }
 }
