@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: c52c5d7968fa6c9499b0b5752f899bfb, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: badec4f0b5eaae940b221f490e84a77b, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -308,11 +308,11 @@ GameObject:
   - component: {fileID: 332296003}
   m_Layer: 0
   m_Name: Play area
-  m_TagString: Untagged
+  m_TagString: Death Area
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &332296003
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1095,13 +1095,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1016770965}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.9072214, y: -0.1984874, z: 0.36440426, w: -0.06900559}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.8697657, y: -0.4643536, z: 0.15278038, w: -0.06739166}
+  m_LocalPosition: {x: 0, y: 3, z: 1189.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 1.115, y: -223.528, z: -155.763}
+  m_LocalEulerAnglesHint: {x: 1.413, y: -199.175, z: -124.045}
 --- !u!114 &1016770968
 MonoBehaviour:
   m_ObjectHideFlags: 0

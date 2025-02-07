@@ -11,6 +11,7 @@ TagManager:
   - Enemy Bullet
   - Passable Object
   - Levitatable Object
+  - Death Area
   layers:
   - Default
   - TransparentFX
