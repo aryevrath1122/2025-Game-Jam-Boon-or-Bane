@@ -152,6 +152,7 @@ GameObject:
   - component: {fileID: 4850259920512095744}
   - component: {fileID: 5364908678104841927}
   - component: {fileID: 2170650745071367012}
+  - component: {fileID: -906968770423313336}
   m_Layer: 0
   m_Name: Player 2
   m_TagString: Player
@@ -320,17 +321,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13ba38a0c7af0d44ab93d1cbbb56499e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SheildPrefab: {fileID: 3551559438548373506, guid: 793893a102b7b1845992113ebc966527, type: 3}
-  BulletPrefab: {fileID: 1047695891567219590, guid: 4d40138c885bbfc4ea6424f17e9530cb, type: 3}
-  Checkpoint: {fileID: 3460872764317464162, guid: a90edfc95420d1c4aba46532c4edcded, type: 3}
   moveSpeed: 5
   jumpForce: 10
   dashSpeed: 20
   superJumpMultiplier: 2
-  stamina: 100
   playerInput: {fileID: 4850259920512095744}
-  invisibleMaterial: {fileID: 2100000, guid: ff6bde4f5c606d2449082134fb6de7f4, type: 2}
+  SheildPrefab: {fileID: 3551559438548373506, guid: 793893a102b7b1845992113ebc966527, type: 3}
+  BulletPrefab: {fileID: 1047695891567219590, guid: 4d40138c885bbfc4ea6424f17e9530cb, type: 3}
+  OriginalMaterial: {fileID: 0}
+  InvisibleMaterial: {fileID: 0}
+  healthSlider: {fileID: 0}
+  staminaSlider: {fileID: 0}
+--- !u!114 &-906968770423313336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8119123401247662009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 036855c0a0ca9f2459c954205b290531, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   health: 100
+  maxHealth: 100
+  stamina: 100
+  maxStamina: 100
+  healthSlider: {fileID: 0}
+  staminaSlider: {fileID: 0}
 --- !u!1001 &2473649184620417494
 PrefabInstance:
   m_ObjectHideFlags: 0
