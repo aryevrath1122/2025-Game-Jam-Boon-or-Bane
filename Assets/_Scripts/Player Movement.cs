@@ -1,58 +1,71 @@
-using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // Reference to PlayerStats for shared health and stamina
+    [SerializeField] private GameObject SheildPrefab;
+    [SerializeField] private GameObject BulletPrefab;
+    [SerializeField] public Transform Checkpoint;
+    
+    private Rigidbody rb;
+    private Vector2 moveInput;
     private bool isGrounded = true;
-    private bool isDashing = false;
 
     public float moveSpeed;
     public float jumpForce;
     public float dashSpeed = 20f;
     public float superJumpMultiplier = 2f;
+    public float stamina = 100f;
+    private float maxStamina = 100f;
+    private float staminaRegenRate = 10f;
+    private float sheildCooldown = 3f;
+    private float attackCooldown = 3f;
+    private bool isDashing = false;
+
     private bool canUseDash = false;
     private bool canUseSuperJump = false;
+    private bool canUseSheild = false;
+    private bool canUseAttack = false;
+    private bool canUseInvisibility = false;
+    private bool canUseLevitate = false;
+    
 
-    private bool isInvisible = false;
-    private bool isLevitating = false;
-    private GameObject levitatedObject;
-
-    // Abilities cooldowns
     private float currentSheildCooldown = 0f;
     private float currentAttackCooldown = 0f;
     private float invisibilityCooldown = 0f;
     private float levitateCooldown = 0f;
 
+    private bool isInvisible = false;
+    private bool isLevitating = false;
+    private bool isFucked = false;
+    private GameObject levitatedObject;
+    
+
     public PlayerInput playerInput;
 
-    // References to the shield and bullet prefabs
-    [SerializeField] private GameObject SheildPrefab;
-    [SerializeField] private GameObject BulletPrefab;
+    // Invisible material reference
+    [SerializeField] private Material invisibleMaterial;
+    private Material originalMaterial;
 
-    [SerializeField] private Material OriginalMaterial;
-    [SerializeField] private Material InvisibleMaterial;
+    // Health and health regeneration variables
+    public float health = 100f;
+    private float maxHealth = 100f;
+    private float healthRegenRate = 2f;  // Passive health regeneration rate per second
 
-    // Ability flags
-    private bool canUseSheild = false;
-    private bool canUseAttack = false;
-    private bool canUseInvisibility = false;
-    private bool canUseLevitate = false;
-
-    // Health/Stamina Slider references
-    public Slider healthSlider;
-    public Slider staminaSlider;
+    // Store the last movement direction
+    private Vector3 lastMoveDirection = Vector3.forward;
 
     void Awake()
     {
-        // Set the sliders to the PlayerStats instance
-        PlayerStats.Instance.healthSlider = healthSlider;
-        PlayerStats.Instance.staminaSlider = staminaSlider;
+        rb = GetComponent<Rigidbody>();
+        SheildPrefab.SetActive(false);
 
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
+
+        // Store the original material of the player
+        originalMaterial = GetComponent<Renderer>().material;
 
         // Assign different stats based on player index
         if (playerInput.playerIndex == 0) // Player 1
@@ -73,48 +86,59 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Subscribe to Input System events
-        playerInput.actions["Move"].performed += ctx => Move();
+        playerInput.actions["Move"].performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        playerInput.actions["Move"].canceled += ctx => moveInput = Vector2.zero;
         playerInput.actions["Jump"].performed += ctx => Jump();
         playerInput.actions["Dash"].performed += ctx => UseDashOrSuperJump();
         playerInput.actions["Combat"].performed += ctx => UseSheildOrAttack();
         playerInput.actions["Ability"].performed += ctx => UseSpecialAbility();
         playerInput.actions["HealthRegen"].performed += ctx => UseStaminaToRegenerateHealth();
     }
-
+    
     void FixedUpdate()
+    
     {
         if (!isDashing)
             Move();
 
         RegenerateStamina();
         UpdateCooldowns();
+
+
     }
+
 
     void Move()
     {
-        Vector3 moveDirection = new Vector3(playerInput.actions["Move"].ReadValue<Vector2>().x, 0f, playerInput.actions["Move"].ReadValue<Vector2>().y) * moveSpeed;
-        GetComponent<Rigidbody>().velocity = new Vector3(moveDirection.x, GetComponent<Rigidbody>().velocity.y, moveDirection.z);
+        Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y) * moveSpeed;
+        rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
+
+        // Store the movement direction
+        if (moveInput.magnitude > 0)
+        {
+            lastMoveDirection = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        }
     }
 
     void Jump()
     {
         if (isGrounded)
         {
-            GetComponent<Rigidbody>().velocity = new Vector3(GetComponent<Rigidbody>().velocity.x, jumpForce, GetComponent<Rigidbody>().velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
             isGrounded = false;
         }
     }
 
     void UseDashOrSuperJump()
     {
-        if (canUseDash && PlayerStats.Instance.stamina >= 40f)
+        if (canUseDash && stamina >= 40f)
         {
             StartCoroutine(Dash());
         }
-        else if (canUseSuperJump && isGrounded && PlayerStats.Instance.stamina >= 40f)
+        else if (canUseSuperJump && isGrounded && stamina >= 40f)
         {
-            GetComponent<Rigidbody>().velocity = new Vector3(GetComponent<Rigidbody>().velocity.x, jumpForce * superJumpMultiplier, GetComponent<Rigidbody>().velocity.z);
-            PlayerStats.Instance.ModifyStamina(-40f);  // Decrease shared stamina
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce * superJumpMultiplier, rb.velocity.z);
+            stamina -= 40f;
             isGrounded = false;
         }
     }
@@ -122,15 +146,18 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator Dash()
     {
         isDashing = true;
-        PlayerStats.Instance.ModifyStamina(-40f);  // Decrease shared stamina
+        stamina -= 40f;
 
         float dashTime = 0.2f;
         float startTime = Time.time;
-        Vector3 dashDirection = transform.forward * dashSpeed;
+
+        // Use the last move direction or forward direction if no movement
+        Vector3 dashDirection = lastMoveDirection != Vector3.zero ? lastMoveDirection : transform.forward;
+        dashDirection *= dashSpeed;
 
         while (Time.time < startTime + dashTime)
         {
-            GetComponent<Rigidbody>().velocity = new Vector3(dashDirection.x, GetComponent<Rigidbody>().velocity.y, dashDirection.z);
+            rb.velocity = new Vector3(dashDirection.x, rb.velocity.y, dashDirection.z);
             yield return null;
         }
 
@@ -142,12 +169,12 @@ public class PlayerMovement : MonoBehaviour
         if (canUseSheild && currentSheildCooldown <= 0f)
         {
             SpawnShield();
-            currentSheildCooldown = 3f; // Shield cooldown time
+            currentSheildCooldown = sheildCooldown;
         }
         else if (canUseAttack && currentAttackCooldown <= 0f)
         {
             ShootBullet();
-            currentAttackCooldown = 3f; // Bullet attack cooldown time
+            currentAttackCooldown = attackCooldown;
         }
     }
 
@@ -166,10 +193,12 @@ public class PlayerMovement : MonoBehaviour
         if (canUseInvisibility && invisibilityCooldown <= 0f)
         {
             StartCoroutine(ActivateInvisibility());
+            Debug.Log("Invisibility On");
         }
         else if (canUseLevitate && levitateCooldown <= 0f)
         {
             StartCoroutine(ActivateLevitate());
+            Debug.Log("Levitation On");
         }
     }
 
@@ -179,7 +208,7 @@ public class PlayerMovement : MonoBehaviour
         invisibilityCooldown = 10f;
 
         // Change material to invisible
-        GetComponent<Renderer>().material = InvisibleMaterial;
+        GetComponent<Renderer>().material = invisibleMaterial;
 
         // Disable collision with "Passable Object" tagged objects
         Collider[] passableObjects = FindObjectsOfType<Collider>();
@@ -194,7 +223,7 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(5f); // Fixed duration
 
         // Restore original material
-        GetComponent<Renderer>().material = OriginalMaterial;
+        GetComponent<Renderer>().material = originalMaterial;
         isInvisible = false;
 
         // Re-enable collision with "Passable Object" tagged objects
@@ -258,18 +287,23 @@ public class PlayerMovement : MonoBehaviour
 
     void RegenerateStamina()
     {
-        if (PlayerStats.Instance.stamina < PlayerStats.Instance.maxStamina)
+        if (stamina < maxStamina)
         {
-            PlayerStats.Instance.ModifyStamina(10f * Time.deltaTime); // Regenerate stamina over time
+            stamina += staminaRegenRate * Time.deltaTime;
+            if (stamina > maxStamina)
+                stamina = maxStamina;
         }
     }
 
+    // Method to use stamina to regenerate health when pressing the left shoulder button
     void UseStaminaToRegenerateHealth()
     {
-        if (PlayerStats.Instance.stamina >= 20f)  // Use 20 stamina to regenerate 10 health
+        if (stamina >= 20f)  // Example: Use 20 stamina to regenerate 10 health
         {
-            PlayerStats.Instance.ModifyHealth(10f);
-            PlayerStats.Instance.ModifyStamina(-20f);
+            health += 10f;
+            if (health > maxHealth) health = maxHealth;
+
+            stamina -= 20f;
         }
     }
 
@@ -287,11 +321,22 @@ public class PlayerMovement : MonoBehaviour
         {
             isGrounded = true;
         }
-
         if (collision.gameObject.CompareTag("Enemy Bullet"))
         {
-            PlayerStats.Instance.ModifyHealth(-20f);  // Shared health damage
-            if (PlayerStats.Instance.health <= 0) Destroy(gameObject);  // Player death
+            health = health - 20;
+            if (health <= 0) Destroy(gameObject);
+        }
+        if (collision.collider.CompareTag("Death Area"))
+        {
+            isFucked = true;
+            this.gameObject.SetActive(false);
+            transform.position = Checkpoint.position;
+            if (isFucked == true)
+            {
+                Debug.Log("Running");
+                this.gameObject.SetActive(true);
+                isFucked = false;
+            }
         }
     }
 }
