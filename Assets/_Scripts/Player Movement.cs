@@ -1,6 +1,7 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -56,6 +57,12 @@ public class PlayerMovement : MonoBehaviour
     // Store the last movement direction
     private Vector3 lastMoveDirection = Vector3.forward;
 
+    //Sliders For UI
+    [SerializeField] private Slider healthSlider;
+    [SerializeField] private Slider staminaSlider;
+
+
+    
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -94,7 +101,14 @@ public class PlayerMovement : MonoBehaviour
         playerInput.actions["Ability"].performed += ctx => UseSpecialAbility();
         playerInput.actions["HealthRegen"].performed += ctx => UseStaminaToRegenerateHealth();
     }
-    
+    void Start()
+    {
+        // Initialize sliders with max values
+        if (healthSlider != null) healthSlider.maxValue = maxHealth;
+        if (staminaSlider != null) staminaSlider.maxValue = maxStamina;
+        UpdateUI();
+
+    }
     void FixedUpdate()
     
     {
@@ -106,8 +120,16 @@ public class PlayerMovement : MonoBehaviour
 
 
     }
+    void Update()
+    {
+        UpdateUI();
+    }
 
-
+    void UpdateUI()
+    {
+        if (healthSlider != null) healthSlider.value = health;
+        if (staminaSlider != null) staminaSlider.value = stamina;
+    }
     void Move()
     {
         Vector3 moveDirection = new Vector3(moveInput.x, 0f, moveInput.y) * moveSpeed;
